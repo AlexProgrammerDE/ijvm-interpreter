@@ -121,11 +121,10 @@ public class Processor {
                 methodAreaPointer.setPointer(codeAddress);
 
                 // New position for the local variables pointer
-                var parametersMinusObjectRef = parameterCount - 1;
-                var newLvPointer = localVariablePointer.currentPointer() + (parametersMinusObjectRef * MemoryPointer.WORD_SIZE);
+                var newLvPointer = localVariablePointer.currentPointer() + (parameterCount * MemoryPointer.WORD_SIZE) - MemoryPointer.WORD_SIZE;
                 localVariablePointer.setPointer(newLvPointer);
 
-                // Set LV + 0 to the offset to the old method area pointer address
+                // Set LV + 0 to the offset to the return method area pointer address
                 var localVariableSize = localVariableCount * MemoryPointer.WORD_SIZE;
                 var jumpBackAddressPointer = stackPointer.currentPointer() + localVariableSize + MemoryPointer.WORD_SIZE;
                 stack.writeBigEndianInt(newLvPointer, jumpBackAddressPointer);
