@@ -107,11 +107,49 @@ public class Processor {
                 methodAreaPointer.movePointer(wide ? 3 : 2);
             }
             case INVOKEVIRTUAL -> {
-                // TODO: Implement INVOKEVIRTUAL
+                var dispatch = methodArea.readIndex(methodAreaPointer.currentPointer() + 1);
+                var methodAddress = constantPool.readBigEndianInt(constantPoolPointer.currentPointer() + dispatch);
+                var parameterCount = methodArea.readBigEndianShort(methodAddress);
+                var localVariableCount = methodArea.readBigEndianShort(methodAddress + 2);
+                var codeAddress = methodArea.readBigEndianInt(methodAddress + 4);
+                var oldLocalVariablePointer = localVariablePointer.currentPointer();
+
+                // INVOKEVIRTUAL <dispatch-part-1> <dispatch-part-2>
+                var returnMethodAreaPointer = methodAreaPointer.currentPointer() + 3;
+
+                // New position for the program counter
+                methodAreaPointer.setPointer(codeAddress);
+
+                // New position for the local variables pointer
+                var parametersMinusObjectRef = parameterCount - 1;
+                var newLvPointer = localVariablePointer.currentPointer() + (parametersMinusObjectRef * MemoryPointer.WORD_SIZE);
+                localVariablePointer.setPointer(newLvPointer);
+
+                // Set LV + 0 to the offset to the old method area pointer address
+                var localVariableSize = localVariableCount * MemoryPointer.WORD_SIZE;
+                var jumpBackAddressPointer = stackPointer.currentPointer() + localVariableSize + MemoryPointer.WORD_SIZE;
+                stack.writeBigEndianInt(newLvPointer, jumpBackAddressPointer);
+
+                stackPointer.movePointer(localVariableSize);
+
+                stackPointer.pushWord(returnMethodAreaPointer);
+                stackPointer.pushWord(oldLocalVariablePointer);
             }
             case IOR -> operationWithTwoWords((left, right) -> left | right);
             case IRETURN -> {
-                // TODO: Implement IRETURN
+                var value = stackPointer.popWord();
+                var methodLvPointer = localVariablePointer.currentPointer();
+                var lvZeroOffset = stack.readBigEndianInt(methodLvPointer);
+                var oldMethodAreaPointerAddress = methodLvPointer + lvZeroOffset;
+                var oldMethodAreaPointer = stack.readBigEndianInt(oldMethodAreaPointerAddress);
+                var oldLvPointer = stack.readBigEndianInt(oldMethodAreaPointerAddress + MemoryPointer.WORD_SIZE);
+
+                methodAreaPointer.setPointer(oldMethodAreaPointer);
+
+                stack.writeBigEndianInt(methodLvPointer, value);
+
+                stackPointer.setPointer(methodLvPointer);
+                localVariablePointer.setPointer(oldLvPointer);
             }
             case ISTORE -> {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);

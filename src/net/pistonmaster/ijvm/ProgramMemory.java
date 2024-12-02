@@ -66,7 +66,7 @@ public class ProgramMemory {
      * @param address The address to read the short from.
      * @return The short read from memory.
      */
-    public short readBigEndianSHort(int address) {
+    public short readBigEndianShort(int address) {
         ensureCapacity(address + 2);
         return (short) ((storage[address] << 8) | (storage[address + 1] & 0xFF));
     }
@@ -77,7 +77,7 @@ public class ProgramMemory {
      * @param address The address to write the short to.
      * @param value The short to write to memory.
      */
-    public void writeBigEndianSHort(int address, short value) {
+    public void writeBigEndianShort(int address, short value) {
         ensureCapacity(address + 2);
         storage[address] = (byte) (value >> 8);
         storage[address + 1] = (byte) value;
@@ -92,7 +92,7 @@ public class ProgramMemory {
     }
 
     public int readIndex(int address) {
-        return MathHelper.maskSign(readBigEndianSHort(address));
+        return MathHelper.maskSign(readBigEndianShort(address));
     }
 
     public byte readConst(int address) {
@@ -100,6 +100,6 @@ public class ProgramMemory {
     }
 
     public short readOffset(int address) {
-        return readBigEndianSHort(address);
+        return readBigEndianShort(address);
     }
 }
