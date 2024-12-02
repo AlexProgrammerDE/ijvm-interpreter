@@ -42,7 +42,7 @@ public class Processor {
                 methodAreaPointer.movePointer(2);
             }
             case DUP -> {
-                stackPointer.pushWord(stack.readLittleEndianInt(stackPointer.currentPointer()));
+                stackPointer.pushWord(stack.readBigEndianInt(stackPointer.currentPointer()));
 
                 // DUP
                 methodAreaPointer.increment();
@@ -91,15 +91,15 @@ public class Processor {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
                 var value = methodArea.readConst(methodAreaPointer.currentPointer() + 2);
                 var lvIndex = localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE);
-                var currentValue = stack.readLittleEndianInt(lvIndex);
-                stack.writeLittleEndianInt(lvIndex, currentValue + value);
+                var currentValue = stack.readBigEndianInt(lvIndex);
+                stack.writeBigEndianInt(lvIndex, currentValue + value);
 
                 // IINC <index> <value> OR IINC <index-part-1> <index-part-2> <value>
                 methodAreaPointer.movePointer(wide ? 4 : 3);
             }
             case ILOAD -> {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
-                var value = stack.readLittleEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE));
+                var value = stack.readBigEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE));
 
                 stackPointer.pushWord(value);
 
@@ -117,7 +117,7 @@ public class Processor {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
                 var value = stackPointer.popWord();
 
-                stack.writeLittleEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE), value);
+                stack.writeBigEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE), value);
 
                 // ISTORE <index> OR ISTORE <index-part-1> <index-part-2>
                 methodAreaPointer.movePointer(wide ? 3 : 2);
@@ -125,7 +125,7 @@ public class Processor {
             case ISUB -> operationWithTwoWords((left, right) -> left - right);
             case LDC_W -> {
                 var constantPoolIndex = methodArea.readIndex(methodAreaPointer.currentPointer() + 1);
-                var value = constantPool.readLittleEndianInt(constantPoolIndex);
+                var value = constantPool.readBigEndianInt(constantPoolIndex);
                 stackPointer.pushWord(value);
 
                 // LDC_W <index-part-1> <index-part-2>

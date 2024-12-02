@@ -33,59 +33,54 @@ public class ProgramMemory {
     }
 
     /**
-     * Read an integer from memory in little-endian format.
+     * Read an integer from memory in big-endian format.
      *
      * @param address The address to read the integer from.
      * @return The integer read from memory.
      */
-    public int readLittleEndianInt(int address) {
+    public int readBigEndianInt(int address) {
         ensureCapacity(address + 4);
-        int value = 0;
-        for (int i = 0; i < 4; i++) {
-            value |= (storage[address + i] & 0xFF) << (i * 8);
-        }
-        return value;
+        return (storage[address] << 24)
+                | ((storage[address + 1] & 0xFF) << 16)
+                | ((storage[address + 2] & 0xFF) << 8)
+                | (storage[address + 3] & 0xFF);
     }
 
     /**
-     * Write an integer to memory in little-endian format.
+     * Write an integer to memory in big-endian format.
      *
      * @param address The address to write the integer to.
      * @param value The integer to write to memory.
      */
-    public void writeLittleEndianInt(int address, int value) {
+    public void writeBigEndianInt(int address, int value) {
         ensureCapacity(address + 4);
-        for (int i = 0; i < 4; i++) {
-            storage[address + i] = (byte) ((value >> (i * 8)) & 0xFF);
-        }
+        storage[address] = (byte) (value >> 24);
+        storage[address + 1] = (byte) (value >> 16);
+        storage[address + 2] = (byte) (value >> 8);
+        storage[address + 3] = (byte) value;
     }
 
     /**
-     * Write a short to memory in little-endian format.
-     *
-     * @param address The address to write the short to.
-     * @param value The short to write to memory.
-     */
-    public void writeLittleEndianShort(int address, short value) {
-        ensureCapacity(address + 2);
-        for (int i = 0; i < 2; i++) {
-            storage[address + i] = (byte) ((value >> (i * 8)) & 0xFF);
-        }
-    }
-
-    /**
-     * Read a short from memory in little-endian format.
+     * Read a short from memory in big-endian format.
      *
      * @param address The address to read the short from.
      * @return The short read from memory.
      */
-    public short readLittleEndianShort(int address) {
+    public short readBigEndianSHort(int address) {
         ensureCapacity(address + 2);
-        short value = 0;
-        for (int i = 0; i < 2; i++) {
-            value |= (short) ((storage[address + i] & 0xFF) << (i * 8));
-        }
-        return value;
+        return (short) ((storage[address] << 8) | (storage[address + 1] & 0xFF));
+    }
+
+    /**
+     * Write a short to memory in big-endian format.
+     *
+     * @param address The address to write the short to.
+     * @param value The short to write to memory.
+     */
+    public void writeBigEndianSHort(int address, short value) {
+        ensureCapacity(address + 2);
+        storage[address] = (byte) (value >> 8);
+        storage[address + 1] = (byte) value;
     }
 
     public int readVarNum(int address, boolean wide) {
@@ -97,7 +92,7 @@ public class ProgramMemory {
     }
 
     public int readIndex(int address) {
-        return MathHelper.maskSign(readLittleEndianShort(address));
+        return MathHelper.maskSign(readBigEndianSHort(address));
     }
 
     public byte readConst(int address) {
@@ -105,6 +100,6 @@ public class ProgramMemory {
     }
 
     public short readOffset(int address) {
-        return readLittleEndianShort(address);
+        return readBigEndianSHort(address);
     }
 }

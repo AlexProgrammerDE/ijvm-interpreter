@@ -28,13 +28,13 @@ public class MemoryPointer {
     }
 
     public int popWord() {
-        int value = memory.readLittleEndianInt(pointer);
+        int value = memory.readBigEndianInt(pointer);
         pointer -= WORD_SIZE;
         return value;
     }
 
     public void pushWord(int value) {
         pointer += WORD_SIZE;
-        memory.writeLittleEndianInt(pointer, value);
+        memory.writeBigEndianInt(pointer, value);
     }
 }
