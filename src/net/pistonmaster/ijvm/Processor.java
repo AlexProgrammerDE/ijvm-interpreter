@@ -1,4 +1,4 @@
-package ijvm;
+package net.pistonmaster.ijvm;
 
 import java.util.function.BinaryOperator;
 
@@ -23,6 +23,10 @@ public class Processor {
     }
 
     public boolean tick() {
+        return tick(false);
+    }
+
+    public boolean tick(boolean wide) {
         if (methodAreaPointer.currentPointer() >= methodArea.storage.length) {
             System.out.println("Program finished");
             return true;
@@ -84,23 +88,23 @@ public class Processor {
                 }
             }
             case IINC -> {
-                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1);
+                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
                 var value = methodArea.readConst(methodAreaPointer.currentPointer() + 2);
                 var lvIndex = localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE);
                 var currentValue = stack.readLittleEndianInt(lvIndex);
                 stack.writeLittleEndianInt(lvIndex, currentValue + value);
 
-                // IINC <index> <value>
-                methodAreaPointer.movePointer(3);
+                // IINC <index> <value> OR IINC <index-part-1> <index-part-2> <value>
+                methodAreaPointer.movePointer(wide ? 4 : 3);
             }
             case ILOAD -> {
-                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1);
+                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
                 var value = stack.readLittleEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE));
 
                 stackPointer.pushWord(value);
 
-                // ILOAD <index>
-                methodAreaPointer.movePointer(2);
+                // ILOAD <index> OR ILOAD <index-part-1> <index-part-2>
+                methodAreaPointer.movePointer(wide ? 3 : 2);
             }
             case INVOKEVIRTUAL -> {
                 // TODO: Implement INVOKEVIRTUAL
@@ -110,13 +114,13 @@ public class Processor {
                 // TODO: Implement IRETURN
             }
             case ISTORE -> {
-                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1);
+                var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
                 var value = stackPointer.popWord();
 
                 stack.writeLittleEndianInt(localVariablePointer.currentPointer() + (index * MemoryPointer.WORD_SIZE), value);
 
-                // ISTORE <index>
-                methodAreaPointer.movePointer(2);
+                // ISTORE <index> OR ISTORE <index-part-1> <index-part-2>
+                methodAreaPointer.movePointer(wide ? 3 : 2);
             }
             case ISUB -> operationWithTwoWords((left, right) -> left - right);
             case LDC_W -> {
@@ -144,7 +148,9 @@ public class Processor {
                 methodAreaPointer.increment();
             }
             case WIDE -> {
-                // TODO: Implement WIDE
+                // WIDE
+                methodAreaPointer.increment();
+                return tick(true);
             }
             default -> throw new IllegalStateException("Unsupported value: " + instruction);
         }

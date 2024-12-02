@@ -1,4 +1,4 @@
-package ijvm;
+package net.pistonmaster.ijvm;
 
 public class MemoryPointer {
     // How many words per element in the stack and constant pool

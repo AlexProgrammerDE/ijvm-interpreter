@@ -1,4 +1,4 @@
-package ijvm;
+package net.pistonmaster.ijvm;
 
 public class ProgramMemory {
     private final boolean canGrow;
@@ -88,7 +88,11 @@ public class ProgramMemory {
         return value;
     }
 
-    public int readVarNum(int address) {
+    public int readVarNum(int address, boolean wide) {
+        if (wide) {
+            return readIndex(address);
+        }
+
         return MathHelper.maskSign(readByte(address));
     }
 

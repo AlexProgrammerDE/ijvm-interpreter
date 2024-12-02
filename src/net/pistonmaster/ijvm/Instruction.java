@@ -1,4 +1,4 @@
-package ijvm;
+package net.pistonmaster.ijvm;
 
 public enum Instruction {
     BIPUSH((byte) 0x10),

@@ -1,4 +1,4 @@
-package ijvm;
+package net.pistonmaster.ijvm;
 
 public class MathHelper {
     public static int maskSign(byte value) {
