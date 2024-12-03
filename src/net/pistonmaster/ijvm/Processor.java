@@ -54,8 +54,8 @@ public class Processor {
                 // GOTO <offset-part-1> <offset-part-2>
                 methodAreaPointer.movePointer(3);
             }
-            case IADD -> operationWithTwoWords(Integer::sum);
-            case IAND -> operationWithTwoWords((left, right) -> left & right);
+            case IADD -> binaryOperation(Integer::sum);
+            case IAND -> binaryOperation((left, right) -> left & right);
             case IFEQ -> {
                 var offset = methodArea.readOffset(methodAreaPointer.currentPointer() + 1);
                 var value = stackPointer.popWord();
@@ -135,7 +135,7 @@ public class Processor {
                 stackPointer.pushWord(returnMethodAreaPointer);
                 stackPointer.pushWord(oldLocalVariablePointer);
             }
-            case IOR -> operationWithTwoWords((left, right) -> left | right);
+            case IOR -> binaryOperation((left, right) -> left | right);
             case IRETURN -> {
                 var value = stackPointer.popWord();
                 var methodLvPointer = localVariablePointer.currentPointer();
@@ -160,7 +160,7 @@ public class Processor {
                 // ISTORE <index> OR ISTORE <index-part-1> <index-part-2>
                 methodAreaPointer.movePointer(wide ? 3 : 2);
             }
-            case ISUB -> operationWithTwoWords((left, right) -> left - right);
+            case ISUB -> binaryOperation((left, right) -> left - right);
             case LDC_W -> {
                 var constantPoolIndex = methodArea.readIndex(methodAreaPointer.currentPointer() + 1);
                 var value = constantPool.readBigEndianInt(constantPoolIndex);
@@ -196,7 +196,7 @@ public class Processor {
         return false;
     }
 
-    private void operationWithTwoWords(BinaryOperator<Integer> operator) {
+    private void binaryOperation(BinaryOperator<Integer> operator) {
         var right = stackPointer.popWord();
         var left = stackPointer.popWord();
         stackPointer.pushWord(operator.apply(left, right));
