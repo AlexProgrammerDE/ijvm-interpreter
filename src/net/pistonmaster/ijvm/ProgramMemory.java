@@ -27,6 +27,10 @@ public class ProgramMemory {
         return storage[address];
     }
 
+    public int readUnsignedByte(int address) {
+        return MathHelper.maskSign(readByte(address));
+    }
+
     public void writeBytes(int address, byte[] bytes) {
         ensureCapacity(address + bytes.length);
         System.arraycopy(bytes, 0, storage, address, bytes.length);
@@ -71,28 +75,24 @@ public class ProgramMemory {
         return (short) ((storage[address] << 8) | (storage[address + 1] & 0xFF));
     }
 
-    /**
-     * Write a short to memory in big-endian format.
-     *
-     * @param address The address to write the short to.
-     * @param value The short to write to memory.
-     */
-    public void writeBigEndianShort(int address, short value) {
-        ensureCapacity(address + 2);
-        storage[address] = (byte) (value >> 8);
-        storage[address + 1] = (byte) value;
+    public int readUnsignedBigEndianShort(int address) {
+        return MathHelper.maskSign(readBigEndianShort(address));
     }
 
     public int readVarNum(int address, boolean wide) {
         if (wide) {
-            return readIndex(address);
+            return readUnsignedBigEndianShort(address);
         }
 
-        return MathHelper.maskSign(readByte(address));
+        return readUnsignedByte(address);
     }
 
     public int readIndex(int address) {
-        return MathHelper.maskSign(readBigEndianShort(address));
+        return readUnsignedBigEndianShort(address);
+    }
+
+    public int readDisp(int address) {
+        return readUnsignedBigEndianShort(address);
     }
 
     public byte readConst(int address) {

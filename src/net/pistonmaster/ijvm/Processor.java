@@ -107,12 +107,11 @@ public class Processor {
                 methodAreaPointer.movePointer(wide ? 3 : 2);
             }
             case INVOKEVIRTUAL -> {
-                var dispatch = methodArea.readIndex(methodAreaPointer.currentPointer() + 1);
+                var dispatch = methodArea.readDisp(methodAreaPointer.currentPointer() + 1);
                 var methodAddress = constantPool.readBigEndianInt(constantPoolPointer.currentPointer() + dispatch);
                 var parameterCount = methodArea.readBigEndianShort(methodAddress);
                 var localVariableCount = methodArea.readBigEndianShort(methodAddress + 2);
-                var codeAddress = methodArea.readBigEndianInt(methodAddress + 4);
-                var oldLocalVariablePointer = localVariablePointer.currentPointer();
+                var codeAddress = methodAddress + 4;
 
                 // INVOKEVIRTUAL <dispatch-part-1> <dispatch-part-2>
                 var returnMethodAreaPointer = methodAreaPointer.currentPointer() + 3;
@@ -120,8 +119,10 @@ public class Processor {
                 // New position for the program counter
                 methodAreaPointer.setPointer(codeAddress);
 
+                var oldLocalVariablePointer = localVariablePointer.currentPointer();
+
                 // New position for the local variables pointer
-                var newLvPointer = localVariablePointer.currentPointer() + (parameterCount * MemoryPointer.WORD_SIZE) - MemoryPointer.WORD_SIZE;
+                var newLvPointer = stackPointer.currentPointer() - (parameterCount * MemoryPointer.WORD_SIZE) + MemoryPointer.WORD_SIZE;
                 localVariablePointer.setPointer(newLvPointer);
 
                 // Set LV + 0 to the offset to the return method area pointer address
