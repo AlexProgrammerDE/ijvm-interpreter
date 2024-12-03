@@ -1,7 +1,10 @@
 package net.pistonmaster.ijvm;
 
-public class Test {
-    public static void main(String[] args) {
+import org.junit.jupiter.api.Test;
+
+public class IJVMTest {
+    @Test
+    public void test() {
         var processor = new Processor();
         processor.methodArea.writeBytes(0, new byte[]{
                 0x00,
