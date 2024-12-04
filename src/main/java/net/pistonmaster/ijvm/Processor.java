@@ -4,7 +4,7 @@ import java.util.function.BinaryOperator;
 
 public class Processor {
     public final ProgramMemory constantPool;
-    public final ProgramMemory stack = new ProgramMemory(128);
+    public final ProgramMemory stack = new ProgramMemory(0);
     public final ProgramMemory methodArea;
     // CPP = Constant Pool Pointer
     public final MemoryPointer constantPoolPointer;
@@ -15,11 +15,22 @@ public class Processor {
     // PC = Program Counter
     public final MemoryPointer methodAreaPointer;
 
-    public Processor(byte[] constantPool, byte[] methodArea) {
+    public Processor(ProgramDefinition definition, String initialMethod) {
+        this(definition.constantPool(), definition.methodArea(), definition.methods().get(initialMethod));
+    }
+
+    public Processor(byte[] constantPool, byte[] methodArea, int initialMethodPointer) {
         this.constantPool = new ProgramMemory(constantPool);
         this.methodArea = new ProgramMemory(methodArea);
         this.constantPoolPointer = new MemoryPointer(this.constantPool);
         this.methodAreaPointer = new MemoryPointer(this.methodArea);
+
+        var parameters = this.methodArea.readUnsignedBigEndianShort(this.methodAreaPointer.currentPointer());
+        var localVariables = this.methodArea.readUnsignedBigEndianShort(this.methodAreaPointer.currentPointer() + 2);
+
+        this.localVariablePointer.setPointer(0);
+        this.stackPointer.setPointer((parameters + localVariables) * MemoryPointer.WORD_SIZE);
+        this.methodAreaPointer.setPointer(initialMethodPointer + 4);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -34,8 +45,8 @@ public class Processor {
     }
 
     public boolean tick(boolean wide) {
-        if (methodAreaPointer.currentPointer() >= methodArea.storage.length) {
-            System.out.println("Program finished");
+        if (methodAreaPointer.currentPointer() >= methodArea.storage.length
+                || stackPointer.currentPointer() == 0) {
             return true;
         }
 

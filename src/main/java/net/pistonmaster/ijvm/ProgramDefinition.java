@@ -19,16 +19,6 @@ public record ProgramDefinition(
         Map<String, Integer> constants,
         Map<String, Integer> methods
 ) {
-    public static void test() {
-        System.out.println(new ProgramDefinitionBuilder()
-                .addMethod("main", new MethodBodyBuilder(
-                        List.of(),
-                        List.of(),
-                        new ArrayList<>()
-                ))
-                .link());
-    }
-
     public static class ProgramDefinitionBuilder {
         private final Map<String, Integer> constants = new LinkedHashMap<>();
         private final Map<String, MethodBodyBuilder> methods = new LinkedHashMap<>();
@@ -118,6 +108,10 @@ public record ProgramDefinition(
 
     public record MethodBodyBuilder(List<String> parameterNames, List<String> localVariableNames,
                                     List<MethodByteResolvable> bytes) {
+        public MethodBodyBuilder(List<String> parameterNames, List<String> localVariableNames) {
+            this(parameterNames, localVariableNames, new ArrayList<>());
+        }
+
         private boolean needsWide(int number) {
             return number > Byte.MAX_VALUE;
         }

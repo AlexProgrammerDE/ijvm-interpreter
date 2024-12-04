@@ -3,6 +3,9 @@ package net.pistonmaster.ijvm;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class IJVMTest {
     @Test
     public void memoryReadTest() {
@@ -45,16 +48,30 @@ public class IJVMTest {
     @Test
     public void biPushTest() {
         var processor = new Processor(new byte[0], new byte[]{
-                0x00,
+                0x00, 0x01, // Parameters
+                0x00, 0x00, // Local variables
                 Instruction.BIPUSH.getOpcode(),
                 0x05,
-        });
-        processor.constantPoolPointer.setPointer(0);
-        processor.stackPointer.setPointer(1);
-        processor.localVariablePointer.setPointer(0);
-        processor.methodAreaPointer.setPointer(0);
+        }, 0);
         processor.run();
 
-        Assertions.assertEquals(0x05, processor.stack.readBigEndianInt(5));
+        Assertions.assertEquals(0x05, processor.stack.readBigEndianInt(0x00000008));
+    }
+
+    @Test
+    public void simpleProgramTest() {
+        var program = new ProgramDefinition.ProgramDefinitionBuilder()
+                .addMethod("main", new ProgramDefinition.MethodBodyBuilder(List.of(), List.of())
+                        .addBIPUSH(5)
+                        .addBIPUSH(3)
+                        .addIADD()
+                        .addIRETURN()
+                )
+                .link();
+        var processor = new Processor(program, "main");
+        processor.run();
+
+        System.out.println(Arrays.toString(processor.stack.storage));
+        Assertions.assertEquals(0x08, processor.stack.readBigEndianInt(0x00000008));
     }
 }
