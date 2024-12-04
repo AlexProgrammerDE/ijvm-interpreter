@@ -5,7 +5,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public record ProgramDefinition(byte[] constantPool, byte[] methodArea) {
+/**
+ * Represents a program definition.
+ *
+ * @param constantPool The constant pool of the program.
+ * @param methodArea The method area of the program.
+ * @param constants Pointer positions of constants by name.
+ * @param methods Pointer positions of methods by name.
+ */
+public record ProgramDefinition(
+        byte[] constantPool,
+        byte[] methodArea,
+        Map<String, Integer> constants,
+        Map<String, Integer> methods
+) {
     public static void test() {
         System.out.println(new ProgramDefinitionBuilder()
                 .addMethod("main", new MethodBodyBuilder(
@@ -25,6 +38,10 @@ public record ProgramDefinition(byte[] constantPool, byte[] methodArea) {
                 throw new IllegalArgumentException("Constant already exists!");
             }
 
+            if (methods.containsKey(name)) {
+                throw new IllegalArgumentException("Constant name is already a method!");
+            }
+
             constants.put(name, value);
             return this;
         }
@@ -34,12 +51,68 @@ public record ProgramDefinition(byte[] constantPool, byte[] methodArea) {
                 throw new IllegalArgumentException("Method already exists!");
             }
 
+            if (constants.containsKey(name)) {
+                throw new IllegalArgumentException("Method name is already a constant!");
+            }
+
             methods.put(name, body);
             return this;
         }
 
         public ProgramDefinition link() {
-            return new ProgramDefinition(new byte[0], new byte[0]); // TODO: Implement linking
+            var constantPool = new ProgramMemory(0);
+            Map<String, Integer> constantAddresses = new LinkedHashMap<>();
+
+            for (var constant : constants.entrySet()) {
+                constantAddresses.put(constant.getKey(), constantPool.storage.length);
+                constantPool.writeBigEndianInt(constantPool.storage.length, constant.getValue());
+            }
+
+            var methodArea = new ProgramMemory(0);
+            Map<String, Integer> methodAddresses = new LinkedHashMap<>();
+            Map<Integer, String> methodLinkPositions = new LinkedHashMap<>();
+
+            for (var method : methods.entrySet()) {
+                var methodIndex = methodArea.storage.length;
+                methodAddresses.put(method.getKey(), methodIndex);
+
+                constantAddresses.put(method.getKey(), constantPool.storage.length);
+                constantPool.writeBigEndianInt(constantPool.storage.length, methodIndex);
+
+                // Parameters + 1 for OBJREF
+                methodArea.writeBigEndianShort(methodArea.storage.length, (short) (method.getValue().parameterNames.size() + 1));
+
+                // Local variables
+                methodArea.writeBigEndianShort(methodArea.storage.length, (short) method.getValue().localVariableNames.size());
+
+                for (var byteResolvable : method.getValue().bytes) {
+                    switch (byteResolvable) {
+                        case MethodInstruction instruction ->
+                                methodArea.writeByte(methodArea.storage.length, instruction.instruction.getOpcode());
+                        case ParameterData parameterData ->
+                                methodArea.writeType(methodArea.storage.length, parameterData.type, parameterData.value);
+                        case ConstantPoolResolvableMethod constantPoolResolvableMethod -> {
+                            methodLinkPositions.put(methodArea.storage.length, constantPoolResolvableMethod.methodName);
+
+                            // Write some dummy data soi the method can be linked later
+                            methodArea.writeBigEndianShort(methodArea.storage.length, (short) 0);
+                        }
+                        case ConstantPoolResolvableVariable constantPoolResolvableVariable ->
+                                methodArea.writeBigEndianShort(methodArea.storage.length, (short) (int) constantAddresses.get(constantPoolResolvableVariable.constantName));
+                    }
+                }
+            }
+
+            for (var entry : methodLinkPositions.entrySet()) {
+                methodArea.writeBigEndianShort(entry.getKey(), (short) (int) constantAddresses.get(entry.getValue()));
+            }
+
+            return new ProgramDefinition(
+                    constantPool.copyStorage(),
+                    methodArea.copyStorage(),
+                    constantAddresses,
+                    methodAddresses
+            );
         }
     }
 
@@ -62,7 +135,8 @@ public record ProgramDefinition(byte[] constantPool, byte[] methodArea) {
                 index += parameterNames.size();
             }
 
-            return index;
+            // Index + 1 for OBJREF
+            return index + 1;
         }
 
         public MethodBodyBuilder addBIPUSH(int value) {
@@ -209,7 +283,7 @@ public record ProgramDefinition(byte[] constantPool, byte[] methodArea) {
         }
     }
 
-    public interface MethodByteResolvable {
+    public sealed interface MethodByteResolvable permits MethodInstruction, ParameterData, ConstantPoolResolvableMethod, ConstantPoolResolvableVariable {
     }
 
     public record MethodInstruction(Instruction instruction) implements MethodByteResolvable {

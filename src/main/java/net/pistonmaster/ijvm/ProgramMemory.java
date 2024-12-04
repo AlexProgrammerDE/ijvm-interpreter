@@ -33,4 +33,11 @@ public class ProgramMemory implements IMemory {
         ensureCapacity(address + 1);
         return storage[address];
     }
+
+    public byte[] copyStorage() {
+        byte[] copy = new byte[storage.length];
+        System.arraycopy(storage, 0, copy, 0, storage.length);
+
+        return copy;
+    }
 }
