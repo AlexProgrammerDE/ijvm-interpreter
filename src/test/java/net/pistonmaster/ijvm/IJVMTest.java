@@ -6,18 +6,19 @@ import org.junit.jupiter.api.Test;
 public class IJVMTest {
     @Test
     public void memoryReadTest() {
-        var memory = new ProgramMemory(128, false);
-        memory.writeByte(0x00000010, (byte) 0x00);
-        memory.writeByte(0x00000011, (byte) 0x10);
-        memory.writeByte(0x00000012, (byte) 0x00);
-        memory.writeByte(0x00000013, (byte) 0x40);
+        var memory = new ProgramMemory(new byte[]{
+                0x00,
+                0x10,
+                0x00,
+                0x40,
+        });
 
-        Assertions.assertEquals(0x00100040, memory.readBigEndianInt(0x00000010));
+        Assertions.assertEquals(0x00100040, memory.readBigEndianInt(0x00000000));
     }
 
     @Test
     public void serializationIntTest() {
-        var memory = new ProgramMemory(128, false);
+        var memory = new ProgramMemory(128);
 
         var firstTestValue = Integer.MIN_VALUE;
         memory.writeBigEndianInt(0x00000000, firstTestValue);
@@ -30,7 +31,7 @@ public class IJVMTest {
 
     @Test
     public void serializationShortTest() {
-        var memory = new ProgramMemory(128, false);
+        var memory = new ProgramMemory(128);
 
         var firstTestValue = Short.MIN_VALUE;
         memory.writeBigEndianShort(0x00000000, firstTestValue);
@@ -43,8 +44,7 @@ public class IJVMTest {
 
     @Test
     public void biPushTest() {
-        var processor = new Processor();
-        processor.methodArea.writeBytes(0, new byte[]{
+        var processor = new Processor(new byte[0], new byte[]{
                 0x00,
                 Instruction.BIPUSH.getOpcode(),
                 0x05,

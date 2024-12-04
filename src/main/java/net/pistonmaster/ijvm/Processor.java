@@ -3,17 +3,24 @@ package net.pistonmaster.ijvm;
 import java.util.function.BinaryOperator;
 
 public class Processor {
-    public final ProgramMemory constantPool = new ProgramMemory(128, false);
-    public final ProgramMemory stack = new ProgramMemory(128, true);
-    public final ProgramMemory methodArea = new ProgramMemory(128, false);
+    public final ProgramMemory constantPool;
+    public final ProgramMemory stack = new ProgramMemory(128);
+    public final ProgramMemory methodArea;
     // CPP = Constant Pool Pointer
-    public final MemoryPointer constantPoolPointer = new MemoryPointer(constantPool);
+    public final MemoryPointer constantPoolPointer;
     // SP = Stack Pointer
     public final MemoryPointer stackPointer = new MemoryPointer(stack);
     // LV = Local Variable Pointer
     public final MemoryPointer localVariablePointer = new MemoryPointer(stack);
     // PC = Program Counter
-    public final MemoryPointer methodAreaPointer = new MemoryPointer(methodArea);
+    public final MemoryPointer methodAreaPointer;
+
+    public Processor(byte[] constantPool, byte[] methodArea) {
+        this.constantPool = new ProgramMemory(constantPool);
+        this.methodArea = new ProgramMemory(methodArea);
+        this.constantPoolPointer = new MemoryPointer(this.constantPool);
+        this.methodAreaPointer = new MemoryPointer(this.methodArea);
+    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     public void run() {
