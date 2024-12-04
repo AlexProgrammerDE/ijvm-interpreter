@@ -45,11 +45,6 @@ public class Processor {
     }
 
     public boolean tick(boolean wide) {
-        if (methodAreaPointer.currentPointer() >= methodArea.storage.length
-                || stackPointer.currentPointer() == 0) {
-            return true;
-        }
-
         byte opcode = methodArea.readByte(methodAreaPointer.currentPointer());
         Instruction instruction = Instruction.fromOpcode(opcode);
         switch (instruction) {
@@ -157,8 +152,12 @@ public class Processor {
             case IRETURN -> {
                 var value = stackPointer.popWord();
                 var methodLvPointer = localVariablePointer.currentPointer();
-                var lvZeroOffset = stack.readBigEndianInt(methodLvPointer);
-                var oldMethodAreaPointerAddress = methodLvPointer + lvZeroOffset;
+                if (methodLvPointer == 0) {
+                    stack.writeBigEndianInt(methodLvPointer, value);
+                    return true;
+                }
+
+                var oldMethodAreaPointerAddress = stack.readBigEndianInt(methodLvPointer);
                 var oldMethodAreaPointer = stack.readBigEndianInt(oldMethodAreaPointerAddress);
                 var oldLvPointer = stack.readBigEndianInt(oldMethodAreaPointerAddress + MemoryPointer.WORD_SIZE);
 
@@ -168,6 +167,10 @@ public class Processor {
 
                 stackPointer.setPointer(methodLvPointer);
                 localVariablePointer.setPointer(oldLvPointer);
+
+                System.out.println("Returning to method code " + methodAreaPointer.currentPointer());
+                System.out.println("Returning to stack " + stackPointer.currentPointer());
+                System.out.println("Returning to local variables " + localVariablePointer.currentPointer());
             }
             case ISTORE -> {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);

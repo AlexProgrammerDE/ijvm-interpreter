@@ -66,6 +66,10 @@ public interface IMemory {
         return MathHelper.maskSign(readBigEndianShort(address));
     }
 
+    default void writeUnsignedBigEndianShort(int address, int value) {
+        writeBigEndianShort(address, (short) value);
+    }
+
     default int readVarNum(int address, boolean wide) {
         if (wide) {
             return readUnsignedBigEndianShort(address);

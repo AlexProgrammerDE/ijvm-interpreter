@@ -70,10 +70,10 @@ public record ProgramDefinition(
                 constantPool.writeBigEndianInt(constantPool.storage.length, methodIndex);
 
                 // Parameters + 1 for OBJREF
-                methodArea.writeBigEndianShort(methodArea.storage.length, (short) (method.getValue().parameterNames.size() + 1));
+                methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, method.getValue().parameterNames.size() + 1);
 
                 // Local variables
-                methodArea.writeBigEndianShort(methodArea.storage.length, (short) method.getValue().localVariableNames.size());
+                methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, method.getValue().localVariableNames.size());
 
                 for (var byteResolvable : method.getValue().bytes) {
                     switch (byteResolvable) {
@@ -84,17 +84,17 @@ public record ProgramDefinition(
                         case ConstantPoolResolvableMethod constantPoolResolvableMethod -> {
                             methodLinkPositions.put(methodArea.storage.length, constantPoolResolvableMethod.methodName);
 
-                            // Write some dummy data soi the method can be linked later
-                            methodArea.writeBigEndianShort(methodArea.storage.length, (short) 0);
+                            // Write some dummy data so the method can be linked later
+                            methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, 0);
                         }
                         case ConstantPoolResolvableVariable constantPoolResolvableVariable ->
-                                methodArea.writeBigEndianShort(methodArea.storage.length, (short) (int) constantAddresses.get(constantPoolResolvableVariable.constantName));
+                                methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, constantAddresses.get(constantPoolResolvableVariable.constantName));
                     }
                 }
             }
 
             for (var entry : methodLinkPositions.entrySet()) {
-                methodArea.writeBigEndianShort(entry.getKey(), (short) (int) constantAddresses.get(entry.getValue()));
+                methodArea.writeUnsignedBigEndianShort(entry.getKey(), constantAddresses.get(entry.getValue()));
             }
 
             return new ProgramDefinition(

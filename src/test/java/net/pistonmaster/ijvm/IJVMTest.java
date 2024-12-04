@@ -59,7 +59,7 @@ public class IJVMTest {
     }
 
     @Test
-    public void simpleProgramTest() {
+    public void simpleAddProgramTest() {
         var program = new ProgramDefinition.ProgramDefinitionBuilder()
                 .addMethod("main", new ProgramDefinition.MethodBodyBuilder(List.of(), List.of())
                         .addBIPUSH(5)
@@ -72,6 +72,68 @@ public class IJVMTest {
         processor.run();
 
         System.out.println(Arrays.toString(processor.stack.storage));
-        Assertions.assertEquals(0x08, processor.stack.readBigEndianInt(0x00000008));
+        Assertions.assertEquals(0x08, processor.stack.readBigEndianInt(0x00000000));
+    }
+
+    @Test
+    public void simpleSubProgramTest() {
+        var program = new ProgramDefinition.ProgramDefinitionBuilder()
+                .addMethod("main", new ProgramDefinition.MethodBodyBuilder(List.of(), List.of())
+                        .addBIPUSH(5)
+                        .addBIPUSH(3)
+                        .addISUB()
+                        .addIRETURN()
+                )
+                .link();
+        var processor = new Processor(program, "main");
+        processor.run();
+
+        System.out.println(Arrays.toString(processor.stack.storage));
+        Assertions.assertEquals(0x02, processor.stack.readBigEndianInt(0x00000000));
+    }
+
+    @Test
+    public void simpleLocalVarProgramTest() {
+        var program = new ProgramDefinition.ProgramDefinitionBuilder()
+                .addMethod("main", new ProgramDefinition.MethodBodyBuilder(List.of(), List.of("x"))
+                        .addBIPUSH(5)
+                        .addISTORE("x")
+                        .addBIPUSH(3)
+                        .addILOAD("x")
+                        .addIRETURN()
+                )
+                .link();
+        var processor = new Processor(program, "main");
+        processor.run();
+
+        System.out.println(Arrays.toString(processor.stack.storage));
+        Assertions.assertEquals(0x05, processor.stack.readBigEndianInt(0x00000000));
+    }
+
+    @Test
+    public void complexInvokeProgramTest() {
+        var program = new ProgramDefinition.ProgramDefinitionBuilder()
+                .addMethod("main", new ProgramDefinition.MethodBodyBuilder(List.of(), List.of("x"))
+                        .addDUP() // OBJREF
+                        .addBIPUSH(5)
+                        .addINVOKEVIRTUAL("test")
+                        .addISTORE("x")
+                        .addILOAD("x")
+                        .addIRETURN()
+                )
+                .addMethod("test", new ProgramDefinition.MethodBodyBuilder(List.of("x"), List.of("a"))
+                        .addBIPUSH(5)
+                        .addILOAD("x")
+                        .addIADD()
+                        .addISTORE("a")
+                        .addILOAD("a")
+                        .addIRETURN()
+                )
+                .link();
+        var processor = new Processor(program, "main");
+        processor.run();
+
+        System.out.println(Arrays.toString(processor.stack.storage));
+        Assertions.assertEquals(10, processor.stack.readBigEndianInt(0x00000000));
     }
 }
