@@ -71,7 +71,6 @@ public class IJVMTest {
         var processor = new Processor(program, "main");
         processor.run();
 
-        System.out.println(Arrays.toString(processor.stack.storage));
         Assertions.assertEquals(0x08, processor.stack.readBigEndianInt(0x00000000));
     }
 
@@ -88,7 +87,6 @@ public class IJVMTest {
         var processor = new Processor(program, "main");
         processor.run();
 
-        System.out.println(Arrays.toString(processor.stack.storage));
         Assertions.assertEquals(0x02, processor.stack.readBigEndianInt(0x00000000));
     }
 
@@ -106,7 +104,6 @@ public class IJVMTest {
         var processor = new Processor(program, "main");
         processor.run();
 
-        System.out.println(Arrays.toString(processor.stack.storage));
         Assertions.assertEquals(0x05, processor.stack.readBigEndianInt(0x00000000));
     }
 
@@ -133,7 +130,6 @@ public class IJVMTest {
         var processor = new Processor(program, "main");
         processor.run();
 
-        System.out.println(Arrays.toString(processor.stack.storage));
         Assertions.assertEquals(10, processor.stack.readBigEndianInt(0x00000000));
     }
 }

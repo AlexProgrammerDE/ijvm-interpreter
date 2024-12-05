@@ -167,10 +167,6 @@ public class Processor {
 
                 stackPointer.setPointer(methodLvPointer);
                 localVariablePointer.setPointer(oldLvPointer);
-
-                System.out.println("Returning to method code " + methodAreaPointer.currentPointer());
-                System.out.println("Returning to stack " + stackPointer.currentPointer());
-                System.out.println("Returning to local variables " + localVariablePointer.currentPointer());
             }
             case ISTORE -> {
                 var index = methodArea.readVarNum(methodAreaPointer.currentPointer() + 1, wide);
