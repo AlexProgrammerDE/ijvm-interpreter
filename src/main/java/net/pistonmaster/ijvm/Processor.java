@@ -121,7 +121,7 @@ public class Processor {
             }
             case INVOKEVIRTUAL -> {
                 var dispatch = methodArea.readDisp(methodAreaPointer.currentPointer() + 1);
-                var methodAddress = constantPool.readBigEndianInt(constantPoolPointer.currentPointer() + dispatch);
+                var methodAddress = constantPool.readBigEndianInt(constantPoolPointer.currentPointer() + dispatch * MemoryPointer.WORD_SIZE);
                 var parameterCount = methodArea.readBigEndianShort(methodAddress);
                 var localVariableCount = methodArea.readBigEndianShort(methodAddress + 2);
                 var codeAddress = methodAddress + 4;

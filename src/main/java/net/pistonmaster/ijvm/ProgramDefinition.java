@@ -88,13 +88,13 @@ public record ProgramDefinition(
                             methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, 0);
                         }
                         case ConstantPoolResolvableVariable constantPoolResolvableVariable ->
-                                methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, constantAddresses.get(constantPoolResolvableVariable.constantName));
+                                methodArea.writeUnsignedBigEndianShort(methodArea.storage.length, constantAddresses.get(constantPoolResolvableVariable.constantName) / 4);
                     }
                 }
             }
 
             for (var entry : methodLinkPositions.entrySet()) {
-                methodArea.writeUnsignedBigEndianShort(entry.getKey(), constantAddresses.get(entry.getValue()));
+                methodArea.writeUnsignedBigEndianShort(entry.getKey(), constantAddresses.get(entry.getValue()) / 4);
             }
 
             return new ProgramDefinition(

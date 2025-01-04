@@ -51,6 +51,7 @@ public class IJVMTest {
                 0x00, 0x00, // Local variables
                 Instruction.BIPUSH.getOpcode(),
                 0x05,
+                Instruction.IRETURN.getOpcode(),
         }, 0);
         processor.run();
 
