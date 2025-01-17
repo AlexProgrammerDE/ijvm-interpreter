@@ -180,7 +180,7 @@ public class Processor {
             case ISUB -> binaryOperation((left, right) -> left - right);
             case LDC_W -> {
                 var constantPoolIndex = methodArea.readIndex(methodAreaPointer.currentPointer() + 1);
-                var value = constantPool.readBigEndianInt(constantPoolIndex);
+                var value = constantPool.readBigEndianInt(constantPoolPointer.currentPointer() + constantPoolIndex * MemoryPointer.WORD_SIZE);
                 stackPointer.pushWord(value);
 
                 // LDC_W <index-part-1> <index-part-2>
