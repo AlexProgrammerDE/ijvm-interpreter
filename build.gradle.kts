@@ -1,6 +1,11 @@
 plugins {
+    base
     java
     idea
+}
+
+tasks.named<UpdateDaemonJvm>("updateDaemonJvm") {
+    languageVersion = JavaLanguageVersion.of(25)
 }
 
 repositories {
