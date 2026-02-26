@@ -5,7 +5,7 @@ plugins {
     id("com.diffplug.spotless") version "8.2.1"
     id("net.ltgt.errorprone") version "5.0.0"
     id("com.github.spotbugs") version "6.4.8"
-    id("org.openrewrite.rewrite") version "7.26.0"
+    id("org.openrewrite.rewrite") version "7.27.0"
 }
 
 tasks.named<UpdateDaemonJvm>("updateDaemonJvm") {
@@ -40,9 +40,9 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:2.47.0")
     spotbugs("com.github.spotbugs:spotbugs:4.9.8")
 
-    rewrite("org.openrewrite.recipe:rewrite-static-analysis:2.27.0")
-    rewrite("org.openrewrite.recipe:rewrite-migrate-java:3.27.1")
-    rewrite("org.openrewrite.recipe:rewrite-rewrite:0.20.0")
+    rewrite("org.openrewrite.recipe:rewrite-static-analysis:2.28.0")
+    rewrite("org.openrewrite.recipe:rewrite-migrate-java:3.28.0")
+    rewrite("org.openrewrite.recipe:rewrite-rewrite:0.21.0")
 }
 
 testing {
