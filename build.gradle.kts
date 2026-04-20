@@ -4,7 +4,7 @@ plugins {
     idea
     id("com.diffplug.spotless") version "8.4.0"
     id("net.ltgt.errorprone") version "5.1.0"
-    id("com.github.spotbugs") version "6.5.0"
+    id("com.github.spotbugs") version "6.5.1"
     id("org.openrewrite.rewrite") version "7.30.0"
 }
 
