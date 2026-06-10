@@ -4,7 +4,7 @@ plugins {
     idea
     id("com.diffplug.spotless") version "8.6.0"
     id("net.ltgt.errorprone") version "5.1.0"
-    id("com.github.spotbugs") version "6.5.5"
+    id("com.github.spotbugs") version "6.5.6"
     id("org.openrewrite.rewrite") version "7.34.0"
 }
 
@@ -37,8 +37,8 @@ repositories {
 }
 
 dependencies {
-    errorprone("com.google.errorprone:error_prone_core:2.49.0")
-    spotbugs("com.github.spotbugs:spotbugs:4.9.8")
+    errorprone("com.google.errorprone:error_prone_core:2.50.0")
+    spotbugs("com.github.spotbugs:spotbugs:4.10.2")
 
     rewrite("org.openrewrite.recipe:rewrite-static-analysis:2.36.0")
     rewrite("org.openrewrite.recipe:rewrite-migrate-java:3.36.0")
